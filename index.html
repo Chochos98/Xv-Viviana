@@ -2,82 +2,110 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scroll Video Invitation</title>
+    <title>Fullscreen Video</title>
     <style>
         body, html {
             height: 100%;
             margin: 0;
             overflow: hidden;
+            position: relative;
+        }
+        #video-wrapper {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
         }
         video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .scroll-video {
+            display: none;
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            z-index: 1;
+            overflow: hidden;
+        }
+        .scroll-video video {
+            position: relative;
+            transform: translateY(0);
+            transition: transform 0.5s;
         }
         .overlay {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-        }
-        .button {
-            background-color: rgba(255, 255, 255, 0.7);
-            border: none;
-            padding: 15px;
-            margin: 10px;
-            cursor: pointer;
-            font-size: 16px;
-            border-radius: 5px;
-            text-align: center;
-        }
-        .countdown {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(255, 255, 255, 0.7);
-            padding: 10px;
-            border-radius: 5px;
-            font-size: 24px;
+            top: 20px;
+            left: 20px;
+            z-index: 10;
         }
     </style>
 </head>
 <body>
-    <video src="inicio.mp4" autoplay muted loop></video>
-    <video src="scrollin1.mp4" autoplay muted loop></video>
-    <video src="scrollin2.mp4" autoplay muted loop></video>
-    <video src="scrollin3.mp4" autoplay muted loop></video>
-    <video src="scrollin4.mp4" autoplay muted></video>
-    <div class="overlay">
-        <button class="button" onclick="window.open('https://maps.app.goo.gl/VVVYfVskNErYnuwy5', '_blank')">Ver mapa</button>
-        <button class="button" onclick="window.open('https://wa.me/?text=Quiero asistir a la invitación', '_blank')">Asistir</button>
-        <button class="button">Comparte una foto</button>
+    <div id="video-wrapper">
+        <video id="main-video" autoplay muted onclick="enterScrollMode()">
+            <source src="inicio.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+        <div class="scroll-video" id="scroll-video">
+            <video id="scrolling-video" autoplay muted>
+                <source src="scrollin1.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <video id="scrolling-video-2" autoplay muted>
+                <source src="scrollin2.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <video id="scrolling-video-3" autoplay muted>
+                <source src="scrollin3.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <video id="scrolling-video-4" autoplay muted>
+                <source src="scrollin4.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+        </div>
+        <button class="overlay" onclick="showCountdown()">Start</button>
+        <div id="countdown" class="overlay" style="display:none;">3</div>
     </div>
-    <div class="countdown" id="countdown-timer"></div>
     <script>
-        const countdownDate = new Date('2026-06-06T00:00:00Z').getTime();
-        const countdownInterval = setInterval(() => {
-            const now = new Date().getTime();
-            const distance = countdownDate - now;
-            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-            document.getElementById('countdown-timer').innerHTML = `${days}d ${hours}h ${minutes}m ${seconds}s`;
-            if (distance < 0) {
-                clearInterval(countdownInterval);
-                document.getElementById('countdown-timer').innerHTML = 'EXPIRED';
+        let scrollStarted = false;
+        let currentVideo = 1;
+        function enterScrollMode() {
+            if (!scrollStarted) {
+                scrollStarted = true;
+                document.getElementById('main-video').style.display = 'none';
+                document.getElementById('scroll-video').style.display = 'block';
+                document.getElementById('scrolling-video-' + currentVideo).style.display = 'block';
             }
-        }, 1000);
+        }
+        window.onscroll = function() {
+            let scrollTop = window.scrollY;
+            let videoHeight = window.innerHeight;
+            currentVideo = Math.floor(scrollTop / videoHeight) + 1;
+            for (let i = 1; i <= 4; i++) {
+                document.getElementById('scrolling-video-' + i).style.display = (i === currentVideo) ? 'block' : 'none';
+            }
+        };
+        function showCountdown() {
+            document.getElementById('countdown').style.display = 'block';
+            let count = 3;
+            let countdownInterval = setInterval(function() {
+                count--;
+                document.getElementById('countdown').innerText = count;
+                if (count <= 0) {
+                    clearInterval(countdownInterval);
+                    document.getElementById('countdown').style.display = 'none';
+                    document.getElementById('scroll-video').style.display = 'none';
+                }
+            }, 1000);
+        }
     </script>
 </body>
 </html>
